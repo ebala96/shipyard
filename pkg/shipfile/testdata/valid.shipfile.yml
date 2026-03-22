@@ -1,0 +1,104 @@
+version: '1'
+
+service:
+  name: myapi
+  description: 'A sample REST API service'
+  tags:
+    - backend
+    - api
+
+  source:
+    type: github
+    url: 'https://github.com/example/myapi'
+    branch: main
+    context: '.'
+
+  engine:
+    type: docker
+    connection:
+      host: ''
+
+  scale:
+    instances: 1
+    resources:
+      cpu: 0.5
+      memory: '256m'
+    autoscale:
+      enabled: false
+      min: 1
+      max: 5
+      targetCPU: 70
+      targetMemory: 80
+      cooldownSecs: 60
+    loadBalancer:
+      enabled: false
+      strategy: round-robin
+      stickySession: false
+
+  modes:
+    dev:
+      build:
+        dockerfile: 'Dockerfile.dev'
+        args:
+          BUILD_ENV: development
+      ide:
+        enabled: true
+      runtime:
+        ports:
+          - name: app
+            internal: 3000
+            external: auto
+          - name: ide
+            internal: 8080
+            external: auto
+        env:
+          NODE_ENV: development
+          APP_PORT: '${ports.app}'
+          IDE_PORT: '${ports.ide}'
+        volumes:
+          - type: bind
+            from: '.'
+            to: '/app'
+        health:
+          path: '/healthz'
+          port: app
+          interval: 10
+          timeout: 5
+          retries: 3
+
+    production:
+      build:
+        dockerfile: 'Dockerfile'
+        args:
+          BUILD_ENV: production
+      ide:
+        enabled: false
+      runtime:
+        ports:
+          - name: app
+            internal: 3000
+            external: auto
+        env:
+          NODE_ENV: production
+          APP_PORT: '${ports.app}'
+        volumes:
+          - type: volume
+            from: 'myapi_data'
+            to: '/app/data'
+        resources:
+          cpu: 1.0
+          memory: '512m'
+        health:
+          path: '/healthz'
+          port: app
+          interval: 10
+          timeout: 5
+          retries: 3
+
+  dependencies:
+    - name: postgres
+      required: true
+      waitFor: health
+    - name: redis
+      required: false
+      waitFor: start

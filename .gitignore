@@ -1,0 +1,49 @@
+# Binaries
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+shipyard
+shipyard-agent
+deploy-files.sh
+docs/tasks.md
+CLAUDE.md
+
+# Go build cache
+*.test
+*.out
+vendor/
+
+# Node / Frontend
+web/node_modules/
+web/dist/
+web/.vite/
+
+# Shipyard runtime data
+.shipyard/
+*.bak
+
+# Environment / secrets
+.env
+.env.*
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# etcd / NATS data (managed by Docker volumes)
+etcd-data/
+nats-data/
+
+# Go module download cache
+go.sum.bak
